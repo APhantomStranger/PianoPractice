@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Room — Piano Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vexflow/4.2.2/vexflow.js" onerror="window.__vexfail=true"></script>
+<style>
+  :root{
+    --ivory:#F3ECDD;--ivory-dim:#E7DDC8;--walnut:#231A12;--walnut-deep:#160F0A;--walnut-soft:#33271C;
+    --brass:#C79A45;--brass-bright:#E6BE64;--felt:#7E2B2B;--ink:#0F0B07;--line:#4A3A2B;--good:#6E8B5B;
+    --bad:#B05545;--shadow:rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;
+    background:radial-gradient(120% 80% at 50% -10%, #3a2c1e 0%, var(--walnut) 45%, var(--walnut-deep) 100%);
+    color:var(--ivory);min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:48px}
+  .wrap{max-width:880px;margin:0 auto;padding:0 20px}
+
+  header{padding:34px 0 18px}
+  .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .brand h1{font-family:'Fraunces',serif;font-weight:600;font-size:38px;letter-spacing:-.02em;line-height:.95}
+  .brand h1 .accent{color:var(--brass-bright)}
+  .brand .tag{font-size:13px;color:var(--ivory-dim);opacity:.7;letter-spacing:.04em}
+  .statusbar{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:14px;margin-top:22px}
+  .panel{background:linear-gradient(180deg, var(--walnut-soft), #261c14);border:1px solid var(--line);
+    border-radius:14px;padding:16px 18px;box-shadow:0 8px 22px var(--shadow), inset 0 1px 0 rgba(255,255,255,.04)}
+  .lvl-title{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);opacity:.85}
+  .lvl-name{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-top:2px}
+  .lvl-num{font-family:'Space Mono',monospace;font-size:12px;color:var(--ivory-dim);opacity:.75;margin-top:1px}
+  .keybar{margin-top:14px}
+  .keys{position:relative;height:46px;display:flex;border-radius:4px 4px 6px 6px;overflow:hidden;
+    background:var(--ink);border:1px solid #000;box-shadow:inset 0 -6px 10px rgba(0,0,0,.5)}
+  .wkey{flex:1;border-right:1px solid #1c130c;background:linear-gradient(180deg,#fbf6ec,#d9cdb3);transition:all .5s ease;position:relative}
+  .wkey:last-child{border-right:none}
+  .wkey.lit{background:linear-gradient(180deg,var(--brass-bright),var(--brass));box-shadow:0 0 14px rgba(230,190,100,.7), inset 0 -4px 6px rgba(120,80,10,.4)}
+  .bkey{position:absolute;top:0;height:60%;width:7.2%;background:linear-gradient(180deg,#2a2118,#070504);
+    border-radius:0 0 3px 3px;z-index:2;box-shadow:0 3px 4px rgba(0,0,0,.6);transition:all .5s ease}
+  .bkey.lit{background:linear-gradient(180deg,#8a6a26,#5a4310);box-shadow:0 0 10px rgba(230,190,100,.55)}
+  .xp-line{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:11px;color:var(--ivory-dim);opacity:.8;margin-top:8px}
+  .metric{text-align:left}
+  .metric .big{font-family:'Space Mono',monospace;font-size:30px;font-weight:700;line-height:1;color:var(--ivory)}
+  .metric .big.flame{color:var(--brass-bright)}
+  .metric .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ivory-dim);opacity:.7;margin-top:8px}
+  .metric .sub{font-size:11px;color:var(--ivory-dim);opacity:.55;margin-top:3px}
+
+  nav{display:flex;gap:4px;margin:26px 0 8px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .tab{background:none;border:none;color:var(--ivory-dim);font-family:'Inter';font-size:14px;font-weight:500;
+    padding:11px 16px;cursor:pointer;letter-spacing:.02em;position:relative;border-radius:8px 8px 0 0;transition:color .2s}
+  .tab:hover{color:var(--ivory)}
+  .tab.active{color:var(--brass-bright)}
+  .tab.active::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;background:var(--brass-bright)}
+  .view{display:none;animation:fade .35s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .section-h{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin:26px 0 4px}
+  .section-sub{color:var(--ivory-dim);opacity:.7;font-size:14px;margin-bottom:18px;line-height:1.5}
+
+  .item{background:linear-gradient(180deg,#2c2118,#221913);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+  .item.done{border-color:var(--brass)}
+  .item-head{display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer}
+  .check{width:26px;height:26px;border-radius:7px;border:2px solid var(--line);flex-shrink:0;display:grid;place-items:center;transition:all .2s;background:rgba(0,0,0,.2)}
+  .item.done .check{background:var(--brass);border-color:var(--brass-bright);color:var(--walnut-deep)}
+  .check svg{width:14px;height:14px;opacity:0;transition:opacity .2s}
+  .item.done .check svg{opacity:1}
+  .item-body{flex:1;min-width:0}
+  .item-title{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}
+  .item-title .core{font-size:9px;letter-spacing:.12em;color:var(--brass);border:1px solid var(--brass);border-radius:4px;padding:1px 5px;text-transform:uppercase;opacity:.85}
+  .item-min{font-family:'Space Mono',monospace;font-size:12px;color:var(--ivory-dim);opacity:.7;margin-left:auto;flex-shrink:0}
+  .item-how{font-size:13px;line-height:1.55;color:var(--ivory-dim);opacity:.8;padding:0 16px 15px 56px}
+
+  .timer-card{background:linear-gradient(180deg,var(--walnut-soft),#1d150e);border:1px solid var(--line);border-radius:16px;padding:22px;margin:22px 0;text-align:center;box-shadow:0 10px 26px var(--shadow)}
+  .clock{font-family:'Space Mono',monospace;font-size:54px;font-weight:700;letter-spacing:.02em;line-height:1}
+  .clock .dim{color:var(--ivory-dim);opacity:.4}
+  .timer-row{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+  button.btn{font-family:'Inter';font-weight:600;font-size:14px;padding:11px 22px;border-radius:10px;border:1px solid var(--line);cursor:pointer;transition:all .18s;color:var(--ivory);background:#2c2118}
+  button.btn:hover{transform:translateY(-1px)}
+  button.btn.primary{background:linear-gradient(180deg,var(--brass-bright),var(--brass));color:var(--walnut-deep);border-color:var(--brass-bright)}
+  button.btn.primary:hover{box-shadow:0 6px 16px rgba(230,190,100,.3)}
+  button.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .manual{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:13px;color:var(--ivory-dim)}
+  .manual input{width:64px;font-family:'Space Mono',monospace;font-size:14px;text-align:center;background:var(--ink);border:1px solid var(--line);color:var(--ivory);border-radius:7px;padding:6px}
+  .notes-in{width:100%;margin-top:14px;background:var(--ink);border:1px solid var(--line);color:var(--ivory);border-radius:10px;padding:12px;font-family:'Inter';font-size:14px;resize:vertical;min-height:54px}
+  .notes-in::placeholder{color:var(--ivory-dim);opacity:.4}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .stat{background:linear-gradient(180deg,#2c2118,#221913);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+  .stat .n{font-family:'Space Mono',monospace;font-size:26px;font-weight:700}
+  .stat .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ivory-dim);opacity:.7;margin-top:6px}
+  .ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .ach{background:linear-gradient(180deg,#241a12,#1c140d);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;opacity:.45;transition:all .3s;position:relative}
+  .ach.got{opacity:1;border-color:var(--brass)}
+  .ach .badge{width:50px;height:50px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-size:22px;background:radial-gradient(circle at 35% 30%,#3a2c1a,#160f08);border:1px solid var(--line);color:var(--ivory-dim)}
+  .ach.got .badge{background:radial-gradient(circle at 35% 30%,var(--brass-bright),#8a6212);border-color:var(--brass-bright);color:var(--walnut-deep);box-shadow:0 0 16px rgba(230,190,100,.45)}
+  .ach .nm{font-family:'Fraunces',serif;font-weight:600;font-size:15px}
+  .ach .ds{font-size:11px;color:var(--ivory-dim);opacity:.7;margin-top:4px;line-height:1.4}
+  .ach .when{font-family:'Space Mono',monospace;font-size:9px;color:var(--brass);margin-top:7px;letter-spacing:.05em}
+
+  .log-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:linear-gradient(180deg,#2a2017,#211812);border:1px solid var(--line);border-radius:11px;padding:13px 16px;margin-bottom:9px}
+  .log-date{font-family:'Space Mono',monospace;font-size:13px;color:var(--brass-bright);min-width:84px}
+  .log-mid{min-width:0}
+  .log-seg{font-size:12px;color:var(--ivory-dim);opacity:.75;line-height:1.4}
+  .log-note{font-size:13px;margin-top:3px;color:var(--ivory)}
+  .log-min{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;text-align:right}
+  .log-min small{display:block;font-size:9px;color:var(--brass);font-weight:400;letter-spacing:.08em}
+  .empty{text-align:center;padding:50px 20px;color:var(--ivory-dim);opacity:.55;font-size:14px;line-height:1.6}
+  .empty .g{font-size:34px;color:var(--brass);opacity:.6;margin-bottom:12px}
+
+  .learn-card{background:linear-gradient(180deg,#2a2017,#211812);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .learn-card h3{font-family:'Fraunces',serif;font-size:19px;font-weight:600;margin-bottom:12px;color:var(--brass-bright)}
+  .learn-card p{font-size:14px;line-height:1.65;color:var(--ivory-dim);margin-bottom:10px}
+  .learn-card b{color:var(--ivory)}
+  .mini-key{display:flex;height:90px;margin:14px 0;border-radius:4px 4px 7px 7px;overflow:hidden;position:relative;background:var(--ink);border:1px solid #000}
+  .mk-w{flex:1;border-right:1px solid #1c130c;background:linear-gradient(180deg,#fbf6ec,#ddd0b6);display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#3a2c1a;position:relative}
+  .mk-b{position:absolute;top:0;height:58%;width:6.5%;background:linear-gradient(180deg,#2a2118,#070504);border-radius:0 0 3px 3px;z-index:2;box-shadow:0 3px 4px rgba(0,0,0,.6)}
+  .staff{margin:8px 0 4px;background:#f3ecdd;border-radius:8px;padding:18px 16px}
+  .finger-tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  .finger-tbl td,.finger-tbl th{border:1px solid var(--line);padding:8px 10px;text-align:center}
+  .finger-tbl th{background:rgba(199,154,69,.15);color:var(--brass-bright);font-family:'Space Mono',monospace;font-size:12px}
+  .finger-tbl td{font-family:'Space Mono',monospace;color:var(--ivory)}
+  .finger-tbl td:first-child{text-align:left;font-family:'Inter';color:var(--ivory-dim)}
+  .drill{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+  .drill .num{flex-shrink:0;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-family:'Space Mono',monospace;font-weight:700;font-size:13px;background:rgba(199,154,69,.16);color:var(--brass-bright);border:1px solid var(--brass)}
+  .drill .dt{font-weight:600;font-size:14px;margin-bottom:3px}
+  .drill .dd{font-size:13px;line-height:1.55;color:var(--ivory-dim);opacity:.82}
+  .cta-card{background:linear-gradient(110deg,#3a2c19,#241a10);border:1px solid var(--brass);border-radius:14px;padding:20px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:space-between}
+  .cta-card .ct{font-family:'Fraunces',serif;font-size:18px;font-weight:600}
+  .cta-card .cd{font-size:13px;color:var(--ivory-dim);opacity:.8;margin-top:3px}
+
+  /* QUIZ */
+  .opt-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .opt-group{flex:1;min-width:200px}
+  .opt-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);opacity:.85;margin-bottom:8px}
+  .pills{display:flex;gap:6px;flex-wrap:wrap}
+  .pill{font-size:13px;font-weight:500;padding:9px 15px;border-radius:9px;border:1px solid var(--line);background:#2a2017;color:var(--ivory-dim);cursor:pointer;transition:all .18s}
+  .pill.on{background:var(--brass);color:var(--walnut-deep);border-color:var(--brass-bright);font-weight:600}
+  .scorebar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+  .scorebox{background:linear-gradient(180deg,#2c2118,#221913);border:1px solid var(--line);border-radius:11px;padding:12px;text-align:center}
+  .scorebox .sn{font-family:'Space Mono',monospace;font-size:22px;font-weight:700}
+  .scorebox .sn.green{color:var(--good)}.scorebox .sn.gold{color:var(--brass-bright)}
+  .scorebox .sl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ivory-dim);opacity:.7;margin-top:5px}
+  .paper{background:#f5efe2;border-radius:14px;padding:14px 10px 8px;box-shadow:0 10px 26px var(--shadow), inset 0 1px 0 #fff;max-width:300px;margin:0 auto;border:1px solid #d8cbb0}
+  #staffSvg{display:flex;justify-content:center;align-items:center;min-height:200px}
+  .prompt{text-align:center;font-family:'Fraunces',serif;font-size:17px;margin:16px 0 4px;color:var(--ivory)}
+  .feedback{text-align:center;min-height:26px;font-weight:600;font-size:15px;margin:8px 0 4px;transition:all .2s}
+  .feedback.good{color:var(--good)}.feedback.bad{color:var(--bad)}
+  .keypad{max-width:430px;margin:6px auto 0}
+  .kp-blacks{display:flex;gap:6px;justify-content:center;margin-bottom:6px}
+  .kp-whites{display:flex;gap:6px;justify-content:center}
+  .kp{font-family:'Space Mono',monospace;cursor:pointer;border-radius:9px;transition:all .12s;display:grid;place-items:center;line-height:1.1;border:1px solid}
+  .kp.white{flex:1;max-width:54px;height:64px;background:linear-gradient(180deg,#fbf6ec,#e2d7bf);color:#2a2017;border-color:#c9bb9c;font-size:18px;font-weight:700}
+  .kp.black{flex:1;max-width:62px;height:50px;background:linear-gradient(180deg,#2e241a,#120c07);color:var(--ivory);border-color:#000;font-size:14px;font-weight:700}
+  .kp.black small{display:block;font-size:10px;opacity:.7;font-weight:400}
+  .kp:hover{transform:translateY(-2px)}
+  .kp.white:hover{box-shadow:0 5px 12px rgba(0,0,0,.3)}
+  .kp.correct{background:linear-gradient(180deg,#86a86c,#5d7a48)!important;color:#fff!important;border-color:#6E8B5B!important}
+  .kp.wrong{background:linear-gradient(180deg,#c2705f,#8f3f30)!important;color:#fff!important;border-color:var(--bad)!important}
+  .kp.disabled{pointer-events:none;opacity:.85}
+  .quiz-controls{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+
+  #toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(120px);background:linear-gradient(180deg,var(--brass-bright),var(--brass));color:var(--walnut-deep);padding:14px 24px;border-radius:14px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.5);z-index:99;transition:transform .45s cubic-bezier(.2,1.3,.4,1);display:flex;align-items:center;gap:12px;max-width:90vw}
+  #toast.show{transform:translateX(-50%) translateY(0)}
+  #toast .ic{font-size:22px}
+  #toast .tt{font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+  #toast .tn{font-family:'Fraunces',serif;font-size:16px}
+  .reset-link{display:block;text-align:center;margin-top:30px;font-size:12px;color:var(--ivory-dim);opacity:.4;cursor:pointer;letter-spacing:.05em}
+  .reset-link:hover{opacity:.7;text-decoration:underline}
+
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+  .legend .chip{display:flex;align-items:center;gap:6px;font-size:12px;font-family:'Space Mono',monospace;color:var(--ivory-dim);font-weight:700}
+  .legend .dot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.35);box-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .gs-controls{display:flex;align-items:center;gap:10px;margin:8px 0 12px;flex-wrap:wrap}
+  .gs-zoom{width:40px;height:40px;border-radius:9px;border:1px solid var(--line);background:#2c2118;color:var(--ivory);font-size:22px;font-weight:700;cursor:pointer;line-height:1;transition:all .15s}
+  .gs-zoom:hover{transform:translateY(-1px);border-color:var(--brass)}
+  .gs-hint{font-size:12px;color:var(--ivory-dim);opacity:.6}
+  .gs-scroll{overflow-x:auto;overflow-y:hidden;background:#f5efe2;border-radius:12px;border:1px solid #d8cbb0;padding:8px 4px;box-shadow:inset 0 2px 8px rgba(0,0,0,.12);-webkit-overflow-scrolling:touch}
+  .gs-scroll svg{display:block}
+  .gs-scroll::-webkit-scrollbar{height:10px}
+  .gs-scroll::-webkit-scrollbar-thumb{background:#c9a24b;border-radius:8px}
+  .gs-scroll::-webkit-scrollbar-track{background:#e0d4bb;border-radius:8px}
+  @media(max-width:620px){
+    .statusbar{grid-template-columns:1fr 1fr;gap:10px}
+    .panel.lvlpanel{grid-column:1/-1}
+    .stat-grid{grid-template-columns:repeat(2,1fr)}
+    .scorebar{grid-template-columns:repeat(2,1fr)}
+    .brand h1{font-size:30px}.clock{font-size:42px}
+    .kp.white{height:56px;font-size:16px}.kp.black{height:44px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>Practice <span class="accent">Room</span></h1>
+      <span class="tag">your daily piano studio</span>
+    </div>
+    <div class="statusbar">
+      <div class="panel lvlpanel">
+        <div class="lvl-title">Current Level</div>
+        <div class="lvl-name" id="lvlName">First Touch</div>
+        <div class="lvl-num" id="lvlNum">Level 1</div>
+        <div class="keybar">
+          <div class="keys" id="keys"></div>
+          <div class="xp-line"><span id="xpNow">0 XP</span><span id="xpNext">→ 30 XP</span></div>
+        </div>
+      </div>
+      <div class="panel metric">
+        <div class="big flame" id="streakN">0</div>
+        <div class="lbl">Day Streak</div>
+        <div class="sub" id="streakSub">start today</div>
+      </div>
+      <div class="panel metric">
+        <div class="big" id="todayN">0</div>
+        <div class="lbl">Min Today</div>
+        <div class="sub" id="todaySub">goal: 15 min</div>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="tab active" data-v="today">Today</button>
+    <button class="tab" data-v="quiz">Note Trainer</button>
+    <button class="tab" data-v="progress">Progress</button>
+    <button class="tab" data-v="log">Log</button>
+    <button class="tab" data-v="learn">Learn</button>
+  </nav>
+
+  <!-- TODAY -->
+  <section class="view active" id="v-today">
+    <h2 class="section-h">Today's routine</h2>
+    <p class="section-sub">Tick off each block as you go. Finish all four core blocks for a bonus and the <b>Full Routine</b> badge. Tap a block to read how to practice it.</p>
+    <div id="itinerary"></div>
+    <div class="timer-card">
+      <div class="clock" id="clock">00:<span class="dim">00</span></div>
+      <div class="timer-row">
+        <button class="btn primary" id="startBtn">Start</button>
+        <button class="btn" id="resetTimer" disabled>Reset</button>
+      </div>
+      <div class="manual">or log <input type="number" id="manualMin" min="1" max="600" placeholder="25"> minutes manually</div>
+      <textarea class="notes-in" id="notesIn" placeholder="Session notes — what went well, what to revisit tomorrow..."></textarea>
+      <div class="timer-row"><button class="btn primary" id="logBtn">Log this session</button></div>
+    </div>
+  </section>
+
+  <!-- QUIZ / NOTE TRAINER -->
+  <section class="view" id="v-quiz">
+    <div id="quizStart">
+      <h2 class="section-h">Note Trainer</h2>
+      <p class="section-sub">Flashcards on the Grand Staff. A note appears — tap its name on the keypad. Untimed, so take your time. Every correct answer earns <b>+3 XP</b> and feeds your level and badges.</p>
+      <div class="opt-row">
+        <div class="opt-group">
+          <div class="opt-label">Which clef?</div>
+          <div class="pills" id="clefPills">
+            <div class="pill" data-clef="treble">Treble 𝄞</div>
+            <div class="pill" data-clef="bass">Bass 𝄢</div>
+            <div class="pill on" data-clef="both">Grand staff</div>
+          </div>
+        </div>
+        <div class="opt-group">
+          <div class="opt-label">Difficulty</div>
+          <div class="pills" id="accPills">
+            <div class="pill on" data-acc="false">Naturals only</div>
+            <div class="pill" data-acc="true">+ Sharps &amp; flats</div>
+          </div>
+        </div>
+      </div>
+      <div class="timer-row"><button class="btn primary" id="learnNotesBtn" style="font-size:16px;padding:14px 34px">Learn Notes ♪</button></div>
+    </div>
+
+    <div id="quizPlay" style="display:none">
+      <div class="scorebar">
+        <div class="scorebox"><div class="sn green" id="qCorrect">0</div><div class="sl">Correct</div></div>
+        <div class="scorebox"><div class="sn gold" id="qStreak">0</div><div class="sl">Streak</div></div>
+        <div class="scorebox"><div class="sn" id="qBest">0</div><div class="sl">Best run</div></div>
+        <div class="scorebox"><div class="sn" id="qAcc">—</div><div class="sl">Accuracy</div></div>
+      </div>
+      <div class="paper"><div id="staffSvg"></div></div>
+      <div class="prompt" id="qClefLabel">Name this note</div>
+      <div class="feedback" id="qFeedback"></div>
+      <div class="keypad">
+        <div class="kp-blacks" id="kpBlacks"></div>
+        <div class="kp-whites" id="kpWhites"></div>
+      </div>
+      <div class="quiz-controls">
+        <button class="btn" id="quizEnd">End round</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="view" id="v-progress">
+    <h2 class="section-h">Your progress</h2>
+    <p class="section-sub">Every practice minute earns 1 XP, full routines add +10, and each note you name correctly adds +3. It all builds your level.</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="n" id="sTotalMin">0</div><div class="l">Total min</div></div>
+      <div class="stat"><div class="n" id="sSessions">0</div><div class="l">Sessions</div></div>
+      <div class="stat"><div class="n" id="sXP">0</div><div class="l">Total XP</div></div>
+      <div class="stat"><div class="n" id="sBest">0</div><div class="l">Best streak</div></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n" id="sNotes">0</div><div class="l">Notes ID'd</div></div>
+      <div class="stat"><div class="n" id="sNoteAcc">—</div><div class="l">Note accuracy</div></div>
+      <div class="stat"><div class="n" id="sNoteRun">0</div><div class="l">Best note run</div></div>
+      <div class="stat"><div class="n" id="sLevel">1</div><div class="l">Level</div></div>
+    </div>
+    <h2 class="section-h" style="font-size:20px">Achievements <span id="achCount" style="font-family:'Space Mono';font-size:14px;color:var(--brass)"></span></h2>
+    <div class="ach-grid" id="achGrid"></div>
+  </section>
+
+  <!-- LOG -->
+  <section class="view" id="v-log">
+    <h2 class="section-h">Practice log</h2>
+    <p class="section-sub">Everything you've logged, newest first. Saved automatically and still here next time you open the tracker.</p>
+    <div id="logList"></div>
+  </section>
+
+  <!-- LEARN -->
+  <section class="view" id="v-learn">
+    <h2 class="section-h">Beginner reference</h2>
+    <p class="section-sub">Quick refreshers for the fundamentals, plus recognition drills to sharpen your eyes and ears.</p>
+
+    <div class="cta-card" style="margin-bottom:18px">
+      <div><div class="ct">Ready to test yourself?</div><div class="cd">The Note Trainer quizzes you on the Grand Staff and keeps score.</div></div>
+      <button class="btn primary" id="goQuizBtn">Open Note Trainer →</button>
+    </div>
+
+    <div class="learn-card">
+      <h3>Finger numbers &amp; hand position</h3>
+      <p>Each finger has a number, same on both hands: <b>1</b> thumb, <b>2</b> index, <b>3</b> middle, <b>4</b> ring, <b>5</b> pinky. Sheet music uses these numbers to tell you which finger to use.</p>
+      <table class="finger-tbl">
+        <tr><th>Finger</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+        <tr><td>Name</td><td>Thumb</td><td>Index</td><td>Middle</td><td>Ring</td><td>Pinky</td></tr>
+      </table>
+      <p style="margin-top:12px">Sit tall, feet flat, wrists level with the keys. Curve your fingers as if holding a small ball — play on the pads, not flat.</p>
+    </div>
+
+    <div class="learn-card">
+      <h3>The white keys</h3>
+      <p>White keys repeat A–G. The trick: <b>C is always just left of any group of two black keys</b>; <b>F is just left of any group of three</b>. Find those two and the rest fall into place.</p>
+      <div class="mini-key" id="learnKeys"></div>
+    </div>
+
+    <div class="learn-card">
+      <h3>Reading the Grand Staff</h3>
+      <p>The <b>treble clef (𝄞)</b> is usually your right hand, the <b>bass clef (𝄢)</b> your left. Together they form the Grand Staff.</p>
+      <p><b>Treble lines</b> (bottom→top): E G B D F → <i>"Every Good Boy Does Fine."</i> &nbsp; <b>Treble spaces</b>: F A C E → <i>"FACE."</i></p>
+      <p><b>Bass lines</b> (bottom→top): G B D F A → <i>"Good Boys Do Fine Always."</i> &nbsp; <b>Bass spaces</b>: A C E G → <i>"All Cows Eat Grass."</i></p>
+      <div class="staff" id="staff"></div>
+      <p style="margin-top:6px"><b>Middle C</b> sits on a short ledger line between the two staves — the bridge linking your hands.</p>
+    </div>
+
+    <div class="learn-card">
+      <h3>C major scale — the first scale</h3>
+      <p>All white keys, no sharps or flats. The challenge is the <b>thumb tuck</b> so you can keep going past five notes.</p>
+      <table class="finger-tbl">
+        <tr><th>Note</th><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>A</td><td>B</td><td>C</td></tr>
+        <tr><th>Right hand</th><td>1</td><td>2</td><td>3</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr>
+        <tr><th>Left hand</th><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>3</td><td>2</td><td>1</td></tr>
+      </table>
+      <p style="margin-top:12px">Right hand going up: after finger 3 on E, <b>tuck your thumb under</b> to play F. Hands separately first, slow and even, then together.</p>
+    </div>
+
+    <div class="learn-card">
+      <h3>Note &amp; key recognition drills</h3>
+      <p>Short, repeatable exercises that build the instant recognition reading music depends on. Rotate through a few each day.</p>
+      <div class="drill"><div class="num">1</div><div><div class="dt">Landmark notes</div><div class="dd">Memorize four anchors first: Middle C, Treble G (2nd line), Bass F (4th line), and Treble high C. Find each on the keyboard in under 2 seconds, then read nearby notes by stepping from a landmark.</div></div></div>
+      <div class="drill"><div class="num">2</div><div><div class="dt">Keyboard geography</div><div class="dd">Eyes closed, place your hand and find C by feeling for the two-black-key groups. Then find every C up and down the piano, then every F. This locks in your map of the keys.</div></div></div>
+      <div class="drill"><div class="num">3</div><div><div class="dt">Steps &amp; skips</div><div class="dd">On the staff, a note on a line whose neighbor is on the next line up is a <i>skip</i>; line-to-adjacent-space is a <i>step</i>. Practice naming "step up / skip down" without naming letters — it trains shape reading.</div></div></div>
+      <div class="drill"><div class="num">4</div><div><div class="dt">Note-naming sprint</div><div class="dd">Open the Note Trainer and answer 20 flashcards in a row. Note your accuracy, then try to beat it tomorrow. Add sharps &amp; flats once naturals feel automatic.</div></div></div>
+      <div class="drill"><div class="num">5</div><div><div class="dt">Reverse find-the-note</div><div class="dd">Pick a random letter (say A). Play every A on the keyboard, then point to where A sits in both clefs. Going name → key cements what the trainer teaches key → name.</div></div></div>
+      <div class="drill"><div class="num">6</div><div><div class="dt">Say-as-you-play</div><div class="dd">In your repertoire block, say each note's letter name out loud as you play it, hands separately. Slow, but it welds the printed note to the key under your finger.</div></div></div>
+    </div>
+
+    <div class="learn-card">
+      <h3>The whole Grand Staff — every note, labelled</h3>
+      <p>Every natural note from low <b>C2</b> up to high <b>C6</b>, drawn on the correct clef with all its ledger lines — exactly how they climb across the keyboard. Notes are <b>colour-coded by letter</b>, so patterns pop out: every red note is a C, every green a D, and so on. Scroll sideways to travel up the range, and use the <b>+ / −</b> buttons to zoom.</p>
+      <div class="legend" id="gsLegend"></div>
+      <div class="gs-controls">
+        <button class="gs-zoom" id="gsOut" title="Zoom out">−</button>
+        <button class="gs-zoom" id="gsIn" title="Zoom in">+</button>
+        <span class="gs-hint">scroll sideways for the full range · zoom with + / −</span>
+      </div>
+      <div class="gs-scroll" id="gsScroll"><div id="gsChart"></div></div>
+    </div>
+  </section>
+
+  <div class="reset-link" id="resetAll">reset all progress</div>
+</div>
+
+<div id="toast"><span class="ic" id="toastIc">♪</span><div><div class="tt">Achievement unlocked</div><div class="tn" id="toastName"></div></div></div>
+
+<script>
+/* ============ ROUTINE DATA ============ */
+const CORE = ["posture","fingers","scales","reading","repertoire"];
+const ITINERARY = [
+  {id:"posture", core:true, min:2, title:"Posture & Hand Position",
+   how:"Sit centered at the keyboard, feet flat, wrists level. Curve your fingers and rest 1-2-3-4-5 on C-D-E-F-G. Take three slow breaths — this is your reset before playing."},
+  {id:"fingers", core:true, min:5, title:"Finger Warm-Ups",
+   how:"Hands separately, play fingers 1-2-3-4-5 up and back down on five white keys. Keep an even, slow pulse and equal volume on every finger. Then try 1-3, 2-4, 3-5 hops for independence."},
+  {id:"scales", core:true, min:5, title:"Scales",
+   how:"C major today. Right hand up: C D E F G A B C with fingers 1 2 3 1 2 3 4 5 (tuck the thumb under after E). Then left hand down. Slow first, speed comes later. See the Learn tab for fingering."},
+  {id:"reading", core:true, min:5, title:"Note Reading",
+   how:"Name notes on the staff out loud, then find each on the keyboard. Open the Note Trainer for 15-20 flashcards — it's the fastest way to build this. Lines E-G-B-D-F, spaces spell FACE."},
+  {id:"repertoire", core:true, min:8, title:"Repertoire (a real piece)",
+   how:"Work a short beginner piece. Hands separately first, then together. Loop the two hardest bars slowly five times rather than replaying the whole thing. Quality over distance."},
+  {id:"cooldown", core:false, min:0, title:"Cool-Down / Free Play",
+   how:"Optional and unscored. Improvise on the white keys, replay a favorite, or just enjoy the sound. Ending on something fun keeps you coming back tomorrow."}
+];
+const LEVELS = ["—","First Touch","Note Reader","Scale Walker","Steady Hands","Melody Maker","Sight Reader","Étude Student","Sonatina","Recitalist","Virtuoso"];
+
+const ACHIEVEMENTS = [
+  {id:"first",     ic:"♪", nm:"First Notes",      ds:"Log your first session",          test:s=>s.sessions>=1},
+  {id:"quizfirst", ic:"𝅘𝅥", nm:"Note Rookie",      ds:"Answer your first flashcard",      test:s=>s.qAttempts>=1},
+  {id:"fifteen",   ic:"⧗", nm:"Daily Warm-Up",    ds:"Practice 15+ min in one day",     test:s=>s.maxDay>=15},
+  {id:"full",      ic:"✓", nm:"Full Routine",     ds:"Finish all core blocks in a day", test:s=>s.fullDays>=1},
+  {id:"sessions10",ic:"♬", nm:"Getting Serious",  ds:"Log 10 sessions",                 test:s=>s.sessions>=10},
+  {id:"streak3",   ic:"✸", nm:"Three in a Row",   ds:"Practice 3 days straight",        test:s=>s.best>=3},
+  {id:"streak5",   ic:"✶", nm:"High Five",        ds:"Practice 5 days straight",        test:s=>s.best>=5},
+  {id:"streak7",   ic:"✺", nm:"One Week Strong",  ds:"Practice 7 days straight",        test:s=>s.best>=7},
+  {id:"streak14",  ic:"❉", nm:"Fortnight Focus",  ds:"Practice 14 days straight",       test:s=>s.best>=14},
+  {id:"month",     ic:"♛", nm:"Thirty & Thriving",ds:"Practice 30 days straight",       test:s=>s.best>=30},
+  {id:"streak100", ic:"♚", nm:"Century Streak",   ds:"Practice 100 days straight",      test:s=>s.best>=100},
+  {id:"hour",      ic:"★", nm:"Hour of Power",     ds:"Reach 60 total minutes",          test:s=>s.totalMin>=60},
+  {id:"min300",    ic:"✦", nm:"Marathon",         ds:"Reach 300 total minutes",         test:s=>s.totalMin>=300},
+  {id:"min1000",   ic:"✧", nm:"Four-Digit Club",  ds:"Reach 1000 total minutes",        test:s=>s.totalMin>=1000},
+  {id:"scales10",  ic:"♩", nm:"Scale Climber",    ds:"Include scales in 10 sessions",   test:s=>s.scaleS>=10},
+  {id:"reader",    ic:"𝄞", nm:"Sight Reader",     ds:"Include reading in 10 sessions",  test:s=>s.readS>=10},
+  {id:"earlybird", ic:"☀", nm:"Early Bird",       ds:"Practice before 7am",             test:s=>s.earlyBird},
+  {id:"nightowl",  ic:"☾", nm:"Night Owl",        ds:"Practice after 10pm",             test:s=>s.nightOwl},
+  {id:"level5",    ic:"⬆", nm:"Melody Maker",     ds:"Reach Level 5",                   test:s=>s.level>=5},
+  {id:"level10",   ic:"♕", nm:"Virtuoso",         ds:"Reach Level 10",                  test:s=>s.level>=10},
+  {id:"sessions100",ic:"◆",nm:"Centurion",        ds:"Log 100 sessions",                test:s=>s.sessions>=100},
+  {id:"quiz50",    ic:"♭", nm:"Note Detective",   ds:"Name 50 notes correctly",         test:s=>s.qCorrect>=50},
+  {id:"quiz250",   ic:"♯", nm:"Staff Scholar",    ds:"Name 250 notes correctly",        test:s=>s.qCorrect>=250},
+  {id:"qstreak10", ic:"⟳", nm:"On a Roll",        ds:"10 flashcards right in a row",    test:s=>s.qBest>=10},
+  {id:"qstreak25", ic:"◎", nm:"Eagle Eyes",       ds:"25 flashcards right in a row",    test:s=>s.qBest>=25},
+  {id:"treble50",  ic:"𝄠", nm:"Treble Tamer",     ds:"50 treble notes correct",         test:s=>s.qTreble>=50},
+  {id:"bass50",    ic:"𝄢", nm:"Bass Master",      ds:"50 bass notes correct",           test:s=>s.qBass>=50},
+];
+
+/* ============ QUIZ DATA ============ */
+const TREBLE_POOL=[["C",4],["D",4],["E",4],["F",4],["G",4],["A",4],["B",4],["C",5],["D",5],["E",5],["F",5],["G",5],["A",5]];
+const BASS_POOL=[["E",2],["F",2],["G",2],["A",2],["B",2],["C",3],["D",3],["E",3],["F",3],["G",3],["A",3],["B",3],["C",4]];
+const WHITES=["C","D","E","F","G","A","B"];
+const BLACK=[
+  {id:"csdb",sharp:["C","#"],flat:["D","b"],label:'C♯<small>D♭</small>'},
+  {id:"dseb",sharp:["D","#"],flat:["E","b"],label:'D♯<small>E♭</small>'},
+  {id:"fsgb",sharp:["F","#"],flat:["G","b"],label:'F♯<small>G♭</small>'},
+  {id:"gsab",sharp:["G","#"],flat:["A","b"],label:'G♯<small>A♭</small>'},
+  {id:"asbb",sharp:["A","#"],flat:["B","b"],label:'A♯<small>B♭</small>'},
+];
+
+/* ============ STORAGE ============ */
+const KEY = "practiceroom_v1";
+let MEM = null;
+function defaultState(){ return {sessions:[], unlocked:{}, quiz:{correct:0,attempts:0,best:0,streak:0,xp:0,treble:0,bass:0}}; }
+async function loadState(){
+  try{ const r = await window.storage.get(KEY); if(r&&r.value) return migrate(JSON.parse(r.value)); }
+  catch(e){ if(MEM) return MEM; }
+  return MEM || defaultState();
+}
+function migrate(s){
+  if(!s.unlocked) s.unlocked={};
+  if(!s.sessions) s.sessions=[];
+  if(!s.quiz) s.quiz={correct:0,attempts:0,best:0,streak:0,xp:0,treble:0,bass:0};
+  ["correct","attempts","best","streak","xp","treble","bass"].forEach(k=>{ if(typeof s.quiz[k]!=="number") s.quiz[k]=0; });
+  return s;
+}
+async function saveState(s){ MEM=s; try{ await window.storage.set(KEY, JSON.stringify(s)); }catch(e){ console.warn("storage unavailable, session-only", e); } }
+
+/* ============ HELPERS ============ */
+const todayStr = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+function thr(n){ return 15*(n-1)*n; }
+function levelInfo(xp){ let L=1; while(thr(L+1)<=xp) L++; return {level:L, floor:thr(L), next:thr(L+1), pct:(xp-thr(L))/(thr(L+1)-thr(L))}; }
+function fmtDate(s){ const [y,m,d]=s.split("-"); return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]+" "+(+d); }
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+function derive(state){
+  const sessions=state.sessions, byDay={};
+  let totalMin=0, sessXP=0, scaleS=0, readS=0, earlyBird=false, nightOwl=false;
+  sessions.forEach(se=>{
+    totalMin+=se.min; sessXP+=se.xp;
+    if(se.segs.includes("scales")) scaleS++;
+    if(se.segs.includes("reading")) readS++;
+    if(typeof se.hour==="number"){ if(se.hour<7) earlyBird=true; if(se.hour>=22) nightOwl=true; }
+    if(!byDay[se.date]) byDay[se.date]={min:0,segs:new Set()};
+    byDay[se.date].min+=se.min; se.segs.forEach(x=>byDay[se.date].segs.add(x));
+  });
+  const days=Object.keys(byDay).sort();
+  let maxDay=0, fullDays=0;
+  days.forEach(d=>{ maxDay=Math.max(maxDay,byDay[d].min); if(CORE.every(c=>byDay[d].segs.has(c))) fullDays++; });
+  let best=0, cur=0, prev=null;
+  days.forEach(d=>{ if(prev){ const diff=(new Date(d)-new Date(prev))/86400000; cur=diff===1?cur+1:1; } else cur=1; best=Math.max(best,cur); prev=d; });
+  let curStreak=0;
+  if(days.length){
+    const t=todayStr(); const y=new Date(); y.setDate(y.getDate()-1);
+    const yStr=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
+    const last=days[days.length-1];
+    if(last===t||last===yStr){ curStreak=1; for(let i=days.length-2;i>=0;i--){ if((new Date(days[i+1])-new Date(days[i]))/86400000===1) curStreak++; else break; } }
+  }
+  const q=state.quiz;
+  const totalXP=sessXP+(q.xp||0);
+  const li=levelInfo(totalXP);
+  return {sessions:sessions.length, totalMin, totalXP, scaleS, readS, maxDay, fullDays, best, streak:curStreak,
+    earlyBird, nightOwl, level:li.level, li, byDay, todayMin:(byDay[todayStr()]?.min)||0,
+    qCorrect:q.correct, qAttempts:q.attempts, qBest:q.best, qStreak:q.streak, qTreble:q.treble, qBass:q.bass};
+}
+
+/* ============ STATE ============ */
+let state=null, todayChecks=new Set(), timerOn=false, elapsed=0, ticker=null;
+let quizSettings={clef:"both", acc:false}, currentQ=null, quizLocked=false;
+
+/* ============ HEADER / STATS RENDER ============ */
+function renderHeader(d){
+  document.getElementById("lvlName").textContent=LEVELS[Math.min(d.level,10)]+(d.level>10?(" "+d.level):"");
+  document.getElementById("lvlNum").textContent="Level "+d.level;
+  document.getElementById("xpNow").textContent=Math.round(d.totalXP)+" XP";
+  document.getElementById("xpNext").textContent="→ "+d.li.next+" XP";
+  document.getElementById("streakN").textContent=d.streak;
+  document.getElementById("streakSub").textContent=d.streak?"keep it alive!":"start today";
+  document.getElementById("todayN").textContent=d.todayMin;
+  document.getElementById("todaySub").textContent=d.todayMin>=15?"goal hit ✓":"goal: 15 min";
+  const keys=document.getElementById("keys");
+  if(!keys.dataset.built){
+    const N=14; for(let i=0;i<N;i++){ const w=document.createElement("div"); w.className="wkey"; keys.appendChild(w); }
+    const pat=[1,0,1,1,0,1,1];
+    for(let i=0;i<N-1;i++){ if(pat[i%7]){ const b=document.createElement("div"); b.className="bkey"; b.style.left=((i+1)*(100/N)-3.6)+"%"; b.dataset.bi=i; keys.appendChild(b);} }
+    keys.dataset.built="1";
+  }
+  const wkeys=[...keys.querySelectorAll(".wkey")], bkeys=[...keys.querySelectorAll(".bkey")];
+  const litCount=Math.round(d.li.pct*wkeys.length);
+  wkeys.forEach((w,i)=>w.classList.toggle("lit", i<litCount));
+  bkeys.forEach(b=>b.classList.toggle("lit", (+b.dataset.bi)<litCount-1));
+}
+
+function renderProgress(d){
+  document.getElementById("sTotalMin").textContent=d.totalMin;
+  document.getElementById("sSessions").textContent=d.sessions;
+  document.getElementById("sXP").textContent=Math.round(d.totalXP);
+  document.getElementById("sBest").textContent=d.best;
+  document.getElementById("sNotes").textContent=d.qCorrect;
+  document.getElementById("sNoteAcc").textContent=d.qAttempts?Math.round(d.qCorrect/d.qAttempts*100)+"%":"—";
+  document.getElementById("sNoteRun").textContent=d.qBest;
+  document.getElementById("sLevel").textContent=d.level;
+  const grid=document.getElementById("achGrid"); grid.innerHTML=""; let got=0;
+  ACHIEVEMENTS.forEach(a=>{
+    const u=!!state.unlocked[a.id]; if(u) got++;
+    const el=document.createElement("div"); el.className="ach"+(u?" got":"");
+    el.innerHTML=`<div class="badge">${a.ic}</div><div class="nm">${a.nm}</div><div class="ds">${a.ds}</div>${u?`<div class="when">${fmtDate(state.unlocked[a.id])}</div>`:""}`;
+    grid.appendChild(el);
+  });
+  document.getElementById("achCount").textContent="("+got+"/"+ACHIEVEMENTS.length+")";
+}
+
+function renderItinerary(){
+  const wrap=document.getElementById("itinerary"); wrap.innerHTML="";
+  ITINERARY.forEach(it=>{
+    const done=todayChecks.has(it.id);
+    const el=document.createElement("div"); el.className="item"+(done?" done":"");
+    el.innerHTML=`<div class="item-head"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="item-body"><div class="item-title">${it.title} ${it.core?'<span class="core">core</span>':''}<span class="item-min">${it.min?("~"+it.min+" min"):"optional"}</span></div></div></div><div class="item-how">${it.how}</div>`;
+    el.querySelector(".item-head").addEventListener("click",()=>{ todayChecks.has(it.id)?todayChecks.delete(it.id):todayChecks.add(it.id); renderItinerary(); });
+    wrap.appendChild(el);
+  });
+}
+
+function renderLog(){
+  const list=document.getElementById("logList"); list.innerHTML="";
+  if(!state.sessions.length){ list.innerHTML=`<div class="empty"><div class="g">𝄞</div>No sessions logged yet.<br>Head to the Today tab, practice, and log your first session.</div>`; return; }
+  [...state.sessions].reverse().forEach(se=>{
+    const names=se.segs.map(id=>ITINERARY.find(i=>i.id===id)?.title.replace(/ \(.*\)/,"")).filter(Boolean).join(" · ")||"free practice";
+    const row=document.createElement("div"); row.className="log-row";
+    row.innerHTML=`<div class="log-date">${fmtDate(se.date)}</div><div class="log-mid"><div class="log-seg">${names}</div>${se.notes?`<div class="log-note">${escapeHtml(se.notes)}</div>`:""}</div><div class="log-min">${se.min}<small>+${se.xp} XP</small></div>`;
+    list.appendChild(row);
+  });
+}
+
+/* ============ ACHIEVEMENTS + TOAST ============ */
+function checkAchievements(d){ const n=[]; ACHIEVEMENTS.forEach(a=>{ if(!state.unlocked[a.id]&&a.test(d)){ state.unlocked[a.id]=todayStr(); n.push(a);} }); return n; }
+let toastQueue=[];
+function showToast(a){ toastQueue.push(a); if(toastQueue.length===1) playToast(); }
+function playToast(){
+  if(!toastQueue.length) return;
+  const a=toastQueue[0], t=document.getElementById("toast");
+  document.getElementById("toastIc").textContent=a.ic; document.getElementById("toastName").textContent=a.nm;
+  t.classList.add("show");
+  setTimeout(()=>{ t.classList.remove("show"); setTimeout(()=>{ toastQueue.shift(); playToast(); },500); },2300);
+}
+
+/* ============ LOG A SESSION ============ */
+async function logSession(){
+  const manual=parseInt(document.getElementById("manualMin").value);
+  let minutes=manual>0?manual:Math.round(elapsed/60);
+  if(!minutes||minutes<1){ flashLog("Run the timer or enter minutes first."); return; }
+  const segs=[...todayChecks], allCore=CORE.every(c=>todayChecks.has(c)), xp=minutes+(allCore?10:0);
+  state.sessions.push({date:todayStr(), min:minutes, segs, notes:document.getElementById("notesIn").value.trim(), xp, hour:new Date().getHours()});
+  const d=derive(state); const newly=checkAchievements(d); await saveState(state);
+  todayChecks=new Set(); elapsed=0; timerOn=false; clearInterval(ticker);
+  document.getElementById("manualMin").value=""; document.getElementById("notesIn").value="";
+  document.getElementById("startBtn").textContent="Start"; document.getElementById("resetTimer").disabled=true; updateClock();
+  renderItinerary(); renderHeader(derive(state)); renderProgress(derive(state)); renderLog();
+  flashLog(`Logged ${minutes} min · +${xp} XP${allCore?" (full-routine bonus!)":""}`);
+  newly.forEach(showToast);
+}
+function flashLog(msg){ const b=document.getElementById("logBtn"), o=b.textContent; b.textContent=msg; b.style.background="linear-gradient(180deg,#7e9a66,#5d7a48)"; setTimeout(()=>{ b.textContent=o; b.style.background=""; },2200); }
+function updateClock(){ const m=Math.floor(elapsed/60), s=elapsed%60; document.getElementById("clock").innerHTML=String(m).padStart(2,"0")+':<span class="dim">'+String(s).padStart(2,"0")+'</span>'; }
+
+/* ============ NOTE TRAINER ============ */
+function buildKeypad(){
+  const wb=document.getElementById("kpWhites"), bb=document.getElementById("kpBlacks");
+  wb.innerHTML=""; bb.innerHTML="";
+  BLACK.forEach(b=>{ const el=document.createElement("div"); el.className="kp black"; el.dataset.id=b.id; el.innerHTML=b.label;
+    el.addEventListener("click",()=>answer(b.id,el)); bb.appendChild(el); });
+  WHITES.forEach(w=>{ const el=document.createElement("div"); el.className="kp white"; el.dataset.id=w; el.textContent=w;
+    el.addEventListener("click",()=>answer(w,el)); wb.appendChild(el); });
+}
+function genQuestion(){
+  let clef = quizSettings.clef==="both" ? pick(["treble","bass"]) : quizSettings.clef;
+  let pool = clef==="treble"?TREBLE_POOL:BASS_POOL;
+  if(quizSettings.acc && Math.random()<0.4){
+    const bk=pick(BLACK), spell=Math.random()<0.5?"sharp":"flat", [letter,gl]=bk[spell];
+    const octs=pool.filter(p=>p[0]===letter).map(p=>p[1]);
+    if(octs.length){ const oct=pick(octs);
+      return {clef, answer:bk.id, letter, oct, gl, vexKey:letter.toLowerCase()+gl+"/"+oct, vexAcc:gl, display:letter+(gl==="#"?"♯":"♭")}; }
+  }
+  const [letter,oct]=pick(pool);
+  return {clef, answer:letter, letter, oct, gl:null, vexKey:letter.toLowerCase()+"/"+oct, vexAcc:null, display:letter};
+}
+function loadQuestion(){
+  quizLocked=false; currentQ=genQuestion();
+  document.querySelectorAll(".kp").forEach(k=>k.classList.remove("correct","wrong","disabled"));
+  document.getElementById("qFeedback").textContent=""; document.getElementById("qFeedback").className="feedback";
+  document.getElementById("qClefLabel").textContent = currentQ.clef==="treble" ? "Name this note (treble 𝄞)" : "Name this note (bass 𝄢)";
+  renderStaff(currentQ);
+}
+function renderStaff(q){
+  const div=document.getElementById("staffSvg"); div.innerHTML="";
+  if(window.Vex && Vex.Flow && !window.__vexfail){ try{ renderVex(div,q); return; }catch(e){ console.warn("vexflow render failed, using fallback",e); } }
+  renderFallback(div,q);
+}
+function renderVex(div,q){
+  const VF=Vex.Flow, W=260,H=240;
+  const r=new VF.Renderer(div,VF.Renderer.Backends.SVG); r.resize(W,H);
+  const ctx=r.getContext(); ctx.setFillStyle("#241a12"); ctx.setStrokeStyle("#241a12");
+  const x=18,w=205;
+  const tr=new VF.Stave(x,22,w); tr.addClef("treble"); tr.setContext(ctx).draw();
+  const bs=new VF.Stave(x,120,w); bs.addClef("bass"); bs.setContext(ctx).draw();
+  new VF.StaveConnector(tr,bs).setType("brace").setContext(ctx).draw();
+  new VF.StaveConnector(tr,bs).setType("singleLeft").setContext(ctx).draw();
+  const note=new VF.StaveNote({clef:q.clef, keys:[q.vexKey], duration:"w"});
+  if(q.vexAcc) note.addModifier(new VF.Accidental(q.vexAcc),0);
+  const stave=q.clef==="treble"?tr:bs;
+  const v=new VF.Voice({num_beats:4,beat_value:4}); v.addTickables([note]);
+  new VF.Formatter().joinVoices([v]).format([v], w-70);
+  v.draw(ctx,stave);
+}
+function renderFallback(div,q){
+  const L={C:0,D:1,E:2,F:3,G:4,A:5,B:6}, idx=q.oct*7+L[q.letter], s=12, half=6, cx=150;
+  const yT=i=>68-(i-30)*half, yB=i=>156-(i-18)*half;
+  let svg=`<svg viewBox="0 0 240 200" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+  for(let i=0;i<5;i++) svg+=`<line x1="44" y1="${20+i*s}" x2="220" y2="${20+i*s}" stroke="#3a2c1a" stroke-width="1.3"/>`;
+  for(let i=0;i<5;i++) svg+=`<line x1="44" y1="${108+i*s}" x2="220" y2="${108+i*s}" stroke="#3a2c1a" stroke-width="1.3"/>`;
+  svg+=`<line x1="44" y1="20" x2="44" y2="156" stroke="#3a2c1a" stroke-width="1.6"/>`;
+  svg+=`<text x="4" y="74" font-family="serif" font-size="58" fill="#241a12">𝄞</text>`;
+  svg+=`<text x="8" y="148" font-family="serif" font-size="46" fill="#241a12">𝄢</text>`;
+  const cy=q.clef==="treble"?yT(idx):yB(idx);
+  const ledg=(lo,hi,yfn)=>{ if(idx>hi){ for(let i=hi+2;i<=idx;i+=2) svg+=`<line x1="${cx-12}" y1="${yfn(i)}" x2="${cx+12}" y2="${yfn(i)}" stroke="#3a2c1a" stroke-width="1.3"/>`; } if(idx<lo){ for(let i=lo-2;i>=idx;i-=2) svg+=`<line x1="${cx-12}" y1="${yfn(i)}" x2="${cx+12}" y2="${yfn(i)}" stroke="#3a2c1a" stroke-width="1.3"/>`; } };
+  if(q.clef==="treble") ledg(30,38,yT); else ledg(18,26,yB);
+  if(q.gl) svg+=`<text x="${cx-28}" y="${cy+7}" font-family="serif" font-size="24" fill="#241a12">${q.gl==="#"?"♯":"♭"}</text>`;
+  svg+=`<ellipse cx="${cx}" cy="${cy}" rx="8.5" ry="6.2" fill="none" stroke="#241a12" stroke-width="2.6" transform="rotate(-18 ${cx} ${cy})"/>`;
+  svg+=`</svg>`; div.innerHTML=svg;
+}
+async function answer(id, el){
+  if(quizLocked||!currentQ) return; quizLocked=true;
+  const correct = id===currentQ.answer; const q=state.quiz; q.attempts++;
+  document.querySelectorAll(".kp").forEach(k=>k.classList.add("disabled"));
+  const fb=document.getElementById("qFeedback");
+  if(correct){
+    q.correct++; q.streak++; q.best=Math.max(q.best,q.streak); q.xp+=3;
+    if(currentQ.clef==="treble") q.treble++; else q.bass++;
+    el.classList.add("correct");
+    fb.textContent="Correct! +3 XP"; fb.className="feedback good";
+  } else {
+    q.streak=0; el.classList.add("wrong");
+    const right=document.querySelector('.kp[data-id="'+currentQ.answer+'"]'); if(right) right.classList.add("correct");
+    fb.textContent="That was "+currentQ.display; fb.className="feedback bad";
+  }
+  const d=derive(state); const newly=checkAchievements(d); await saveState(state);
+  document.getElementById("qCorrect").textContent=q.correct;
+  document.getElementById("qStreak").textContent=q.streak;
+  document.getElementById("qBest").textContent=q.best;
+  document.getElementById("qAcc").textContent=Math.round(q.correct/q.attempts*100)+"%";
+  renderHeader(d); renderProgress(d);
+  newly.forEach(showToast);
+  setTimeout(loadQuestion, correct?900:1500);
+}
+function startQuiz(){
+  buildKeypad();
+  document.getElementById("quizStart").style.display="none";
+  document.getElementById("quizPlay").style.display="block";
+  const q=state.quiz;
+  document.getElementById("qCorrect").textContent=q.correct;
+  document.getElementById("qStreak").textContent=q.streak;
+  document.getElementById("qBest").textContent=q.best;
+  document.getElementById("qAcc").textContent=q.attempts?Math.round(q.correct/q.attempts*100)+"%":"—";
+  loadQuestion();
+}
+function endQuiz(){ document.getElementById("quizPlay").style.display="none"; document.getElementById("quizStart").style.display="block"; }
+
+/* ============ LEARN VISUALS ============ */
+function renderLearnVisuals(){
+  const lk=document.getElementById("learnKeys");
+  if(!lk.dataset.built){
+    const labels=["C","D","E","F","G","A","B","C","D","E"], blackPat=[1,1,0,1,1,1,0];
+    labels.forEach(l=>{ const w=document.createElement("div"); w.className="mk-w"; w.textContent=l; lk.appendChild(w); });
+    const N=labels.length;
+    for(let i=0;i<N-1;i++){ if(blackPat[i%7]){ const b=document.createElement("div"); b.className="mk-b"; b.style.left=((i+1)*(100/N)-3.25)+"%"; lk.appendChild(b);} }
+    lk.dataset.built="1";
+  }
+  const st=document.getElementById("staff");
+  if(!st.dataset.built){
+    let g=`<svg viewBox="0 0 360 200" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+    for(let i=0;i<5;i++) g+=`<line x1="46" y1="${22+i*13}" x2="350" y2="${22+i*13}" stroke="#3a2c1a" stroke-width="1.3"/>`;
+    for(let i=0;i<5;i++) g+=`<line x1="46" y1="${120+i*13}" x2="350" y2="${120+i*13}" stroke="#3a2c1a" stroke-width="1.3"/>`;
+    g+=`<line x1="46" y1="22" x2="46" y2="172" stroke="#3a2c1a" stroke-width="1.6"/>`;
+    g+=`<text x="8" y="80" font-family="serif" font-size="62" fill="#7E2B2B">𝄞</text>`;
+    g+=`<text x="12" y="160" font-family="serif" font-size="48" fill="#7E2B2B">𝄢</text>`;
+    g+=`<line x1="150" y1="98" x2="186" y2="98" stroke="#3a2c1a" stroke-width="1.4"/>`;
+    g+=`<ellipse cx="168" cy="98" rx="7.5" ry="5.5" fill="#7E2B2B" transform="rotate(-18 168 98)"/>`;
+    g+=`<text x="200" y="103" font-family="monospace" font-size="13" fill="#3a2c1a">Middle C</text>`;
+    g+=`</svg>`; st.innerHTML=g; st.dataset.built="1";
+  }
+}
+
+/* ============ GRAND STAFF REFERENCE CHART ============ */
+const NOTE_COLORS={C:"#E03131",D:"#2F9E44",E:"#1971C2",F:"#E8590C",G:"#7048E8",A:"#0CA678",B:"#E64980"};
+const NOTE_LETTERS=["C","D","E","F","G","A","B"];
+const GS_LOW=14, GS_HIGH=42; // C2 .. C6 (diatonic index = octave*7 + letterValue)
+const GS_W=1210, GS_H=262, GS_X0=100, GS_DX=38;
+let gsZoom=1;
+function gsY(n){ return 60+(38-n)*7; } // F5(38) at y=60, each diatonic step = 7px
+function gsLedgers(n, clef){
+  const res=[], b = clef==="treble" ? {bot:30,top:38} : {bot:18,top:26};
+  if(n<b.bot){ const lo=n%2?n+1:n; for(let e=lo;e<=b.bot-2;e+=2) res.push(e); }
+  if(n>b.top){ const hi=n%2?n-1:n; for(let e=b.top+2;e<=hi;e+=2) res.push(e); }
+  return res;
+}
+function buildGrandStaffChart(){
+  const xL=44, xR=GS_W-16;
+  let s=`<svg viewBox="0 0 ${GS_W} ${GS_H}" width="${GS_W}" height="${GS_H}" xmlns="http://www.w3.org/2000/svg">`;
+  s+=`<rect x="0" y="0" width="${GS_W}" height="${GS_H}" fill="#f5efe2"/>`;
+  [30,32,34,36,38].forEach(n=> s+=`<line x1="${xL}" y1="${gsY(n)}" x2="${xR}" y2="${gsY(n)}" stroke="#4a3a2b" stroke-width="1.2"/>`);
+  [18,20,22,24,26].forEach(n=> s+=`<line x1="${xL}" y1="${gsY(n)}" x2="${xR}" y2="${gsY(n)}" stroke="#4a3a2b" stroke-width="1.2"/>`);
+  s+=`<line x1="${xL}" y1="${gsY(38)}" x2="${xL}" y2="${gsY(18)}" stroke="#4a3a2b" stroke-width="2.4"/>`;
+  s+=`<line x1="${xR}" y1="${gsY(38)}" x2="${xR}" y2="${gsY(18)}" stroke="#4a3a2b" stroke-width="2.4"/>`;
+  s+=`<text x="4" y="${gsY(31)+8}" font-family="serif" font-size="60" fill="#241a12">𝄞</text>`;
+  s+=`<text x="8" y="${gsY(23)+4}" font-family="serif" font-size="48" fill="#241a12">𝄢</text>`;
+  for(let n=GS_LOW;n<=GS_HIGH;n++){
+    const i=n-GS_LOW, letter=NOTE_LETTERS[n%7], oct=Math.floor(n/7), clef=n<=27?"bass":"treble";
+    const cx=GS_X0+i*GS_DX, cy=gsY(n), col=NOTE_COLORS[letter];
+    gsLedgers(n,clef).forEach(e=> s+=`<line x1="${cx-12}" y1="${gsY(e)}" x2="${cx+12}" y2="${gsY(e)}" stroke="#4a3a2b" stroke-width="1.3"/>`);
+    s+=`<ellipse cx="${cx}" cy="${cy}" rx="7.4" ry="5.4" fill="${col}" stroke="#1a120a" stroke-width="0.9" transform="rotate(-18 ${cx} ${cy})"/>`;
+    const ly = clef==="treble" ? cy-12 : cy+21;
+    s+=`<text x="${cx}" y="${ly}" text-anchor="middle" font-family="'Space Mono',monospace" font-size="12.5" font-weight="700" fill="${col}" stroke="#f5efe2" stroke-width="3.2" paint-order="stroke" stroke-linejoin="round">${letter}${oct}</text>`;
+  }
+  s+=`</svg>`;
+  return s;
+}
+function buildGsLegend(){
+  const el=document.getElementById("gsLegend"); if(!el) return;
+  el.innerHTML=NOTE_LETTERS.map(l=>`<span class="chip"><span class="dot" style="background:${NOTE_COLORS[l]}"></span>${l}</span>`).join("");
+}
+function applyGsZoom(){ const svg=document.querySelector("#gsChart svg"); if(svg){ svg.setAttribute("width",Math.round(GS_W*gsZoom)); svg.setAttribute("height",Math.round(GS_H*gsZoom)); } }
+function renderGrandStaff(){ const c=document.getElementById("gsChart"); if(!c) return; c.innerHTML=buildGrandStaffChart(); applyGsZoom(); }
+
+/* ============ TABS / INIT ============ */
+function refreshAll(){ const d=derive(state); renderHeader(d); renderProgress(d); renderLog(); }
+function switchTab(v){ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.v===v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("active",s.id==="v-"+v)); }
+
+async function init(){
+  state=await loadState();
+  renderItinerary(); renderLearnVisuals(); refreshAll(); updateClock();
+
+  document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.v)));
+
+  document.getElementById("startBtn").addEventListener("click",()=>{
+    timerOn=!timerOn; document.getElementById("startBtn").textContent=timerOn?"Pause":"Resume";
+    document.getElementById("resetTimer").disabled=false;
+    if(timerOn) ticker=setInterval(()=>{ elapsed++; updateClock(); },1000); else clearInterval(ticker);
+  });
+  document.getElementById("resetTimer").addEventListener("click",()=>{
+    clearInterval(ticker); timerOn=false; elapsed=0; updateClock();
+    document.getElementById("startBtn").textContent="Start"; document.getElementById("resetTimer").disabled=true;
+  });
+  document.getElementById("logBtn").addEventListener("click",logSession);
+
+  // quiz option pills
+  document.querySelectorAll("#clefPills .pill").forEach(p=>p.addEventListener("click",()=>{
+    document.querySelectorAll("#clefPills .pill").forEach(x=>x.classList.remove("on")); p.classList.add("on"); quizSettings.clef=p.dataset.clef;
+  }));
+  document.querySelectorAll("#accPills .pill").forEach(p=>p.addEventListener("click",()=>{
+    document.querySelectorAll("#accPills .pill").forEach(x=>x.classList.remove("on")); p.classList.add("on"); quizSettings.acc=(p.dataset.acc==="true");
+  }));
+  document.getElementById("learnNotesBtn").addEventListener("click",startQuiz);
+  document.getElementById("quizEnd").addEventListener("click",endQuiz);
+  document.getElementById("goQuizBtn").addEventListener("click",()=>{ switchTab("quiz"); });
+
+  buildGsLegend(); renderGrandStaff();
+  document.getElementById("gsIn").addEventListener("click",()=>{ gsZoom=Math.min(2.6, gsZoom+0.25); applyGsZoom(); });
+  document.getElementById("gsOut").addEventListener("click",()=>{ gsZoom=Math.max(0.55, gsZoom-0.25); applyGsZoom(); });
+
+  document.getElementById("resetAll").addEventListener("click",async()=>{
+    if(confirm("Reset ALL progress — sessions, XP, levels, achievements and quiz score? This can't be undone.")){
+      state=defaultState(); await saveState(state); todayChecks=new Set(); elapsed=0;
+      renderItinerary(); refreshAll(); updateClock(); endQuiz();
+    }
+  });
+}
+init();
+</script>
+</body>
+</html>
