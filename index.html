@@ -183,6 +183,43 @@
   .gs-scroll::-webkit-scrollbar{height:10px}
   .gs-scroll::-webkit-scrollbar-thumb{background:#c9a24b;border-radius:8px}
   .gs-scroll::-webkit-scrollbar-track{background:#e0d4bb;border-radius:8px}
+  .mic-status{display:inline-flex;align-items:center;gap:8px;font-size:12px;padding:7px 13px;border-radius:20px;border:1px solid var(--line);background:#2a2017;color:var(--ivory-dim);font-weight:500}
+  .mic-dot{width:9px;height:9px;border-radius:50%;background:#7a6a55;flex-shrink:0}
+  .mic-dot.live{background:var(--good);box-shadow:0 0 8px var(--good);animation:micpulse 1.2s infinite}
+  @keyframes micpulse{50%{opacity:.35}}
+  .level-cards{display:grid;gap:10px;margin:16px 0}
+  .level-card{display:flex;gap:14px;align-items:center;background:linear-gradient(180deg,#2c2118,#221913);border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .18s;text-align:left}
+  .level-card:hover{border-color:var(--brass);transform:translateY(-1px)}
+  .level-badge{width:42px;height:42px;flex-shrink:0;border-radius:11px;display:grid;place-items:center;font-family:'Space Mono',monospace;font-weight:700;font-size:19px;background:rgba(199,154,69,.16);color:var(--brass-bright);border:1px solid var(--brass)}
+  .level-card.done .level-badge{background:var(--brass);color:var(--walnut-deep)}
+  .level-info{flex:1;min-width:0}
+  .level-info .lt{font-weight:600;font-size:15px}
+  .level-info .ld{font-size:12px;color:var(--ivory-dim);opacity:.75;margin-top:2px;line-height:1.45}
+  .level-info .lb{font-family:'Space Mono',monospace;font-size:11px;color:var(--brass);margin-top:5px}
+  .play-target{text-align:center;margin:10px 0 2px}
+  .play-target .tlabel{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);opacity:.85}
+  .play-target .tnote{font-family:'Fraunces',serif;font-size:66px;font-weight:600;line-height:1;margin-top:2px;transition:color .15s}
+  .play-target .tnote.good{color:var(--good)}.play-target .tnote.bad{color:var(--bad)}
+  .heard{text-align:center;font-family:'Space Mono',monospace;font-size:14px;color:var(--ivory-dim);min-height:22px;margin-top:4px}
+  .tuner{max-width:280px;height:10px;background:var(--ink);border-radius:6px;margin:12px auto 4px;position:relative;border:1px solid var(--line)}
+  .tuner .center{position:absolute;left:50%;top:-2px;width:1px;height:14px;background:rgba(255,255,255,.35)}
+  .tuner .needle{position:absolute;top:-3px;width:4px;height:16px;background:var(--brass-bright);border-radius:2px;left:50%;transform:translateX(-50%);transition:left .08s ease,background .1s;opacity:.4}
+  .tuner .needle.on{opacity:1}
+  .seq-strip{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:16px 0}
+  .seq-chip{min-width:34px;height:42px;padding:0 9px;border-radius:9px;display:grid;place-items:center;font-family:'Space Mono',monospace;font-weight:700;font-size:15px;background:#2a2017;border:1px solid var(--line);color:var(--ivory-dim);transition:all .2s}
+  .seq-chip.cur{border-color:var(--brass-bright);color:var(--brass-bright);box-shadow:0 0 12px rgba(230,190,100,.45);transform:scale(1.1)}
+  .seq-chip.hit{background:linear-gradient(180deg,#6E8B5B,#54704a);color:#fff;border-color:#6E8B5B}
+  .seq-chip.miss{background:linear-gradient(180deg,#b0553f,#8f3f30);color:#fff;border-color:var(--bad)}
+  .play-score{display:flex;gap:26px;justify-content:center;margin:12px 0}
+  .play-score .ps{text-align:center}
+  .play-score .psn{font-family:'Space Mono',monospace;font-size:26px;font-weight:700}
+  .play-score .psl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ivory-dim);opacity:.7;margin-top:4px}
+  .mic-error{background:rgba(176,85,69,.12);border:1px solid var(--bad);border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.6;color:var(--ivory-dim);margin-top:16px}
+  .mic-error b{color:var(--ivory)}
+  .fallback-keys{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+  .fk{font-family:'Space Mono',monospace;font-weight:700;font-size:14px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:#2a2017;color:var(--ivory);cursor:pointer}
+  .fk:hover{border-color:var(--brass);transform:translateY(-1px)}
+  .result-big{text-align:center;font-family:'Fraunces',serif;font-size:40px;font-weight:600;margin:8px 0}
   @media(max-width:620px){
     .statusbar{grid-template-columns:1fr 1fr;gap:10px}
     .panel.lvlpanel{grid-column:1/-1}
@@ -226,6 +263,7 @@
   <nav>
     <button class="tab active" data-v="today">Today</button>
     <button class="tab" data-v="quiz">Note Trainer</button>
+    <button class="tab" data-v="play">Play Along</button>
     <button class="tab" data-v="progress">Progress</button>
     <button class="tab" data-v="log">Log</button>
     <button class="tab" data-v="learn">Learn</button>
@@ -289,6 +327,50 @@
       </div>
       <div class="quiz-controls">
         <button class="btn" id="quizEnd">End round</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAY ALONG / MIC MODE -->
+  <section class="view" id="v-play">
+    <div id="playStart">
+      <h2 class="section-h">Play Along <span style="font-size:13px;color:var(--brass)">· microphone mode</span></h2>
+      <p class="section-sub">Actually play the notes on your piano — the app listens through your mic and checks each one. Lower levels wait for the right note; higher levels score every note in a melody and tally your hits and misses at the end. Pick a level to begin (you'll be asked for mic permission).</p>
+      <div class="mic-status"><span class="mic-dot" id="micDot"></span><span id="micText">microphone off — tap a level to start</span></div>
+      <div class="level-cards" id="levelCards"></div>
+      <div id="micErrorBox"></div>
+      <p class="section-sub" style="margin-top:16px;font-size:12px">Tip: play single notes clearly and let each ring. A real acoustic or digital piano works best; very noisy rooms can confuse the listener. Pitch is matched by note name, so octave doesn't have to be exact.</p>
+    </div>
+
+    <div id="playSession" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+        <div class="mic-status"><span class="mic-dot live"></span><span id="sessLabel">Level 1</span></div>
+        <button class="btn" id="playStop">Stop</button>
+      </div>
+      <div class="play-target"><div class="tlabel" id="tgtLabel">Play this note</div><div class="tnote" id="tgtNote">C</div></div>
+      <div class="tuner"><div class="center"></div><div class="needle" id="needle"></div></div>
+      <div class="heard" id="heard">listening…</div>
+      <div class="seq-strip" id="seqStrip"></div>
+      <div class="play-score">
+        <div class="ps"><div class="psn" style="color:var(--good)" id="scHit">0</div><div class="psl">Correct</div></div>
+        <div class="ps"><div class="psn" style="color:var(--bad)" id="scMiss">0</div><div class="psl">Missed</div></div>
+        <div class="ps"><div class="psn" id="scLeft">0</div><div class="psl">Left</div></div>
+      </div>
+      <div id="fallbackWrap" style="display:none;text-align:center;margin-top:10px">
+        <div class="section-sub" style="margin:0 0 6px">Mic blocked? Tap the note you just played to continue:</div>
+        <div class="fallback-keys" id="fallbackKeys"></div>
+      </div>
+    </div>
+
+    <div id="playResult" style="display:none">
+      <h2 class="section-h" style="text-align:center">Level complete</h2>
+      <div class="result-big" id="resultBig">0 / 0</div>
+      <div class="heard" id="resultLine"></div>
+      <div class="play-score" id="resultScore"></div>
+      <div class="quiz-controls">
+        <button class="btn" id="playRetry">Try again</button>
+        <button class="btn" id="playBack">Back to levels</button>
+        <button class="btn primary" id="playNext">Next level →</button>
       </div>
     </div>
   </section>
@@ -442,6 +524,9 @@ const ACHIEVEMENTS = [
   {id:"qstreak25", ic:"◎", nm:"Eagle Eyes",       ds:"25 flashcards right in a row",    test:s=>s.qBest>=25},
   {id:"treble50",  ic:"𝄠", nm:"Treble Tamer",     ds:"50 treble notes correct",         test:s=>s.qTreble>=50},
   {id:"bass50",    ic:"𝄢", nm:"Bass Master",      ds:"50 bass notes correct",           test:s=>s.qBass>=50},
+  {id:"playfirst", ic:"♫", nm:"Good Ear",         ds:"Finish a Play-Along level",       test:s=>s.pAny},
+  {id:"playperfect",ic:"◉",nm:"Pitch Perfect",    ds:"Clear a scored level, no misses",  test:s=>s.pPerfect},
+  {id:"playmaster",ic:"♪", nm:"Melody Master",    ds:"Complete Play-Along Level 5",     test:s=>s.pLvl5},
 ];
 
 /* ============ QUIZ DATA ============ */
@@ -459,7 +544,7 @@ const BLACK=[
 /* ============ STORAGE ============ */
 const KEY = "practiceroom_v1";
 let MEM = null;
-function defaultState(){ return {sessions:[], unlocked:{}, quiz:{correct:0,attempts:0,best:0,streak:0,xp:0,treble:0,bass:0}}; }
+function defaultState(){ return {sessions:[], unlocked:{}, quiz:{correct:0,attempts:0,best:0,streak:0,xp:0,treble:0,bass:0}, play:{xp:0, levels:{}}}; }
 async function loadState(){
   try{ const r = await window.storage.get(KEY); if(r&&r.value) return migrate(JSON.parse(r.value)); }
   catch(e){ if(MEM) return MEM; }
@@ -470,6 +555,9 @@ function migrate(s){
   if(!s.sessions) s.sessions=[];
   if(!s.quiz) s.quiz={correct:0,attempts:0,best:0,streak:0,xp:0,treble:0,bass:0};
   ["correct","attempts","best","streak","xp","treble","bass"].forEach(k=>{ if(typeof s.quiz[k]!=="number") s.quiz[k]=0; });
+  if(!s.play) s.play={xp:0, levels:{}};
+  if(typeof s.play.xp!=="number") s.play.xp=0;
+  if(!s.play.levels) s.play.levels={};
   return s;
 }
 async function saveState(s){ MEM=s; try{ await window.storage.set(KEY, JSON.stringify(s)); }catch(e){ console.warn("storage unavailable, session-only", e); } }
@@ -506,11 +594,16 @@ function derive(state){
     if(last===t||last===yStr){ curStreak=1; for(let i=days.length-2;i>=0;i--){ if((new Date(days[i+1])-new Date(days[i]))/86400000===1) curStreak++; else break; } }
   }
   const q=state.quiz;
-  const totalXP=sessXP+(q.xp||0);
+  const pl=state.play||{levels:{}}, plLevels=pl.levels||{};
+  const pAny=Object.keys(plLevels).length>0;
+  const pPerfect=Object.values(plLevels).some(l=>l.perfect);
+  const pLvl5=!!(plLevels[5]&&plLevels[5].done);
+  const totalXP=sessXP+(q.xp||0)+(pl.xp||0);
   const li=levelInfo(totalXP);
   return {sessions:sessions.length, totalMin, totalXP, scaleS, readS, maxDay, fullDays, best, streak:curStreak,
     earlyBird, nightOwl, level:li.level, li, byDay, todayMin:(byDay[todayStr()]?.min)||0,
-    qCorrect:q.correct, qAttempts:q.attempts, qBest:q.best, qStreak:q.streak, qTreble:q.treble, qBass:q.bass};
+    qCorrect:q.correct, qAttempts:q.attempts, qBest:q.best, qStreak:q.streak, qTreble:q.treble, qBass:q.bass,
+    pAny, pPerfect, pLvl5};
 }
 
 /* ============ STATE ============ */
@@ -741,26 +834,39 @@ function renderLearnVisuals(){
 /* ============ GRAND STAFF REFERENCE CHART ============ */
 const NOTE_COLORS={C:"#E03131",D:"#2F9E44",E:"#1971C2",F:"#E8590C",G:"#7048E8",A:"#0CA678",B:"#E64980"};
 const NOTE_LETTERS=["C","D","E","F","G","A","B"];
-const GS_LOW=14, GS_HIGH=42; // C2 .. C6 (diatonic index = octave*7 + letterValue)
-const GS_W=1210, GS_H=262, GS_X0=100, GS_DX=38;
+const GS_LOW=11, GS_HIGH=45; // G1 .. F6 (diatonic index = octave*7 + letterValue)
+const GS_W=1374, GS_H=300, GS_X0=104, GS_DX=36;
 let gsZoom=1;
-function gsY(n){ return 60+(38-n)*7; } // F5(38) at y=60, each diatonic step = 7px
+function gsY(n){ return 78+(38-n)*7; } // F5(38) top treble line at y=78, each diatonic step = 7px
 function gsLedgers(n, clef){
   const res=[], b = clef==="treble" ? {bot:30,top:38} : {bot:18,top:26};
   if(n<b.bot){ const lo=n%2?n+1:n; for(let e=lo;e<=b.bot-2;e+=2) res.push(e); }
   if(n>b.top){ const hi=n%2?n-1:n; for(let e=b.top+2;e<=hi;e+=2) res.push(e); }
   return res;
 }
+function trebleClefSVG(){
+  // G-clef: inner curl wraps the G4 line (2nd line from bottom). Local origin sits on that line.
+  return `<g transform="translate(64,${gsY(32)})" fill="none" stroke="#241a12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">`
+    + `<path d="M3,-46 C10,-44 12,-35 5,-31 C-2,-27 -3,-18 4,-14 C13,-9 13,4 3,8 C-8,12 -15,2 -11,-6 C-8,-12 0,-13 4,-6 C7,-1 4,5 -1,4"/>`
+    + `<path d="M4,8 C3,18 1,28 -4,32"/>`
+    + `<circle cx="-1" cy="4" r="1.7" fill="#241a12" stroke="none"/></g>`;
+}
+function bassClefSVG(){
+  // F-clef: the two dots straddle the F3 line (2nd line from top). Local origin sits on that line.
+  return `<g transform="translate(52,${gsY(24)})" fill="#241a12" stroke="none">`
+    + `<path d="M0,-11 C12,-15 22,-8 21,2 C20,12 10,19 -3,20 C7,12 13,6 12,-2 C11,-9 4,-11 -1,-8 C-5,-6 -3,-13 0,-11 Z"/>`
+    + `<circle cx="26" cy="-6" r="2.6"/><circle cx="26" cy="6" r="2.6"/></g>`;
+}
 function buildGrandStaffChart(){
-  const xL=44, xR=GS_W-16;
+  const xL=40, xR=GS_W-14;
   let s=`<svg viewBox="0 0 ${GS_W} ${GS_H}" width="${GS_W}" height="${GS_H}" xmlns="http://www.w3.org/2000/svg">`;
   s+=`<rect x="0" y="0" width="${GS_W}" height="${GS_H}" fill="#f5efe2"/>`;
   [30,32,34,36,38].forEach(n=> s+=`<line x1="${xL}" y1="${gsY(n)}" x2="${xR}" y2="${gsY(n)}" stroke="#4a3a2b" stroke-width="1.2"/>`);
   [18,20,22,24,26].forEach(n=> s+=`<line x1="${xL}" y1="${gsY(n)}" x2="${xR}" y2="${gsY(n)}" stroke="#4a3a2b" stroke-width="1.2"/>`);
   s+=`<line x1="${xL}" y1="${gsY(38)}" x2="${xL}" y2="${gsY(18)}" stroke="#4a3a2b" stroke-width="2.4"/>`;
   s+=`<line x1="${xR}" y1="${gsY(38)}" x2="${xR}" y2="${gsY(18)}" stroke="#4a3a2b" stroke-width="2.4"/>`;
-  s+=`<text x="4" y="${gsY(31)+8}" font-family="serif" font-size="60" fill="#241a12">𝄞</text>`;
-  s+=`<text x="8" y="${gsY(23)+4}" font-family="serif" font-size="48" fill="#241a12">𝄢</text>`;
+  s+=trebleClefSVG();
+  s+=bassClefSVG();
   for(let n=GS_LOW;n<=GS_HIGH;n++){
     const i=n-GS_LOW, letter=NOTE_LETTERS[n%7], oct=Math.floor(n/7), clef=n<=27?"bass":"treble";
     const cx=GS_X0+i*GS_DX, cy=gsY(n), col=NOTE_COLORS[letter];
@@ -779,9 +885,212 @@ function buildGsLegend(){
 function applyGsZoom(){ const svg=document.querySelector("#gsChart svg"); if(svg){ svg.setAttribute("width",Math.round(GS_W*gsZoom)); svg.setAttribute("height",Math.round(GS_H*gsZoom)); } }
 function renderGrandStaff(){ const c=document.getElementById("gsChart"); if(!c) return; c.innerHTML=buildGrandStaffChart(); applyGsZoom(); }
 
+/* ============ PLAY ALONG (MICROPHONE MODE) ============ */
+const PLAY_LEVELS=[
+  {n:1, strict:false, title:"Single Notes · C Major",
+   desc:"One note at a time up the C major scale. Play each note; when the app hears it, it moves on. No penalties.",
+   seq:["C4","D4","E4","F4","G4","A4","B4","C5"]},
+  {n:2, strict:false, title:"Single Notes · Octave Round-Trip",
+   desc:"A full octave up and back down, one note at a time. Still forgiving — just find each note.",
+   seq:["C4","D4","E4","F4","G4","A4","B4","C5","B4","A4","G4","F4","E4","D4","C4"]},
+  {n:3, strict:true, title:"Short Phrases · Scored",
+   desc:"Follow a line built from the C major triad. Every note is scored now — a wrong note is marked but the line keeps going.",
+   seq:["C4","E4","G4","E4","C4","G4","C5","G4","E4","C4"]},
+  {n:4, strict:true, title:"Melody · Ode to Joy",
+   desc:"Play Beethoven's famous theme. Each note is checked and you'll get a final score.",
+   seq:["E4","E4","F4","G4","G4","F4","E4","D4","C4","C4","D4","E4","E4","D4","D4"]},
+  {n:5, strict:true, title:"Melody · Full Challenge",
+   desc:"A longer line with a leap up to a higher run. Follow it all the way to the end for your score.",
+   seq:["E4","E4","F4","G4","G4","F4","E4","D4","C4","C4","D4","E4","D4","C4",
+        "G4","A4","B4","C5","B4","A4","G4","F4","E4","D4","C4"]},
+];
+const PC_NAMES=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+function nameToPc(nm){ const m=nm.match(/^([A-G])([#b]?)/); let pc={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]; if(m[2]==="#")pc++; if(m[2]==="b")pc--; return ((pc%12)+12)%12; }
+function freqToInfo(f){ const midi=Math.round(69+12*Math.log2(f/440)); const pc=((midi%12)+12)%12; const ref=440*Math.pow(2,(midi-69)/12); const cents=Math.round(1200*Math.log2(f/ref)); return {pc, name:PC_NAMES[pc], cents}; }
+function detectPitch(buf, sr){
+  const SIZE=buf.length; let energy=0;
+  for(let i=0;i<SIZE;i++) energy+=buf[i]*buf[i];
+  const rms=Math.sqrt(energy/SIZE);
+  if(rms<0.012) return {freq:-1, rms};
+  const minLag=Math.max(2,Math.floor(sr/1100)), maxLag=Math.floor(sr/65);
+  const c=new Float32Array(maxLag+2); let bestLag=-1, bestVal=0;
+  for(let lag=minLag; lag<=maxLag; lag++){
+    let s=0; for(let i=0;i<SIZE-lag;i++) s+=buf[i]*buf[i+lag];
+    c[lag]=s; if(s>bestVal){ bestVal=s; bestLag=lag; }
+  }
+  if(bestLag<1) return {freq:-1, rms};
+  if(bestVal/energy < 0.4) return {freq:-1, rms};
+  let lag=bestLag; const y1=c[bestLag-1]||0, y2=c[bestLag], y3=c[bestLag+1]||0, den=(y1+y3-2*y2);
+  if(den) lag=bestLag+0.5*(y1-y3)/den;
+  return {freq: sr/lag, rms};
+}
+
+let audioCtx=null, analyser=null, micStream=null, micBuf=null, rafId=null;
+let playState=null, pendingLevel=1;
+
+async function ensureMic(){
+  if(micStream && audioCtx) return;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw {name:"NoApiError"};
+  micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  const src=audioCtx.createMediaStreamSource(micStream);
+  analyser=audioCtx.createAnalyser(); analyser.fftSize=2048; src.connect(analyser);
+  micBuf=new Float32Array(analyser.fftSize);
+}
+function releaseMic(){
+  if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+  if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
+  if(audioCtx){ try{audioCtx.close();}catch(e){} audioCtx=null; }
+  analyser=null; micBuf=null;
+}
+function setMicDot(on){ const d=document.getElementById("micDot"); if(d) d.classList.toggle("live",on); const t=document.getElementById("micText"); if(t) t.textContent=on?"microphone live":"microphone off — tap a level to start"; }
+
+function showPlayPanel(which){
+  ["playStart","playSession","playResult"].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display = (id===which)?"block":"none"; });
+}
+function renderLevelCards(){
+  const wrap=document.getElementById("levelCards"); if(!wrap) return; wrap.innerHTML="";
+  const lv=(state.play&&state.play.levels)||{};
+  PLAY_LEVELS.forEach(L=>{
+    const rec=lv[L.n], done=rec&&rec.done;
+    const badge = done ? (rec.perfect?"★":"✓") : L.n;
+    let best = done ? `best ${rec.bestCorrect}/${rec.total}${rec.perfect?" · perfect!":""}` : (L.strict?"scored melody":"forgiving");
+    const el=document.createElement("div"); el.className="level-card"+(done?" done":"");
+    el.innerHTML=`<div class="level-badge">${badge}</div><div class="level-info"><div class="lt">Level ${L.n} — ${L.title}</div><div class="ld">${L.desc}</div><div class="lb">${best}</div></div>`;
+    el.addEventListener("click",()=>startLevel(L.n,false));
+    wrap.appendChild(el);
+  });
+}
+function clearMicError(){ const b=document.getElementById("micErrorBox"); if(b) b.innerHTML=""; }
+function showMicError(err, levelN){
+  const b=document.getElementById("micErrorBox"); if(!b) return;
+  let msg;
+  if(err && (err.name==="NotAllowedError"||err.name==="SecurityError")) msg="Microphone permission was blocked. Look for a mic icon in your browser's address bar to allow it, then try again.";
+  else if(err && err.name==="NotFoundError") msg="No microphone was found on this device.";
+  else if(err && err.name==="NoApiError") msg="This browser can't reach the microphone here. The in-app preview often blocks mic access — try downloading this file and opening it directly in a browser (Chrome, Safari, Firefox).";
+  else msg="Couldn't start the microphone. If you're in the in-app preview, mic access is often blocked — download the file and open it in a browser, or check your mic permissions.";
+  b.innerHTML=`<div class="mic-error"><b>Microphone unavailable.</b> ${msg}<div class="fallback-keys" style="margin-top:12px"><button class="fk" id="tapInstead">▶ Practice Level ${levelN} by tapping instead</button></div></div>`;
+  document.getElementById("tapInstead").addEventListener("click",()=>startLevel(levelN,true));
+}
+
+async function startLevel(n, tapMode){
+  clearMicError(); pendingLevel=n;
+  const L=PLAY_LEVELS[n-1];
+  if(!tapMode){
+    try{ await ensureMic(); if(audioCtx.state==="suspended") await audioCtx.resume(); }
+    catch(e){ showMicError(e,n); return; }
+  }
+  playState={L, seq:L.seq.map(s=>({name:s.replace(/[0-9]/g,""), pc:nameToPc(s)})), idx:0, hits:0, miss:0, attempts:0,
+             strict:L.strict, running:true, candNote:-1, candCount:0, tapMode:!!tapMode};
+  document.getElementById("sessLabel").textContent=`Level ${n} — ${L.title}`;
+  document.getElementById("fallbackWrap").style.display = tapMode ? "block" : "none";
+  if(tapMode) buildFallbackKeys();
+  showPlayPanel("playSession"); setMicDot(!tapMode);
+  renderSeqStrip(); showTarget(); updateScore();
+  document.getElementById("heard").textContent = tapMode ? "tap the note you played" : "listening…";
+  if(!tapMode) rafId=requestAnimationFrame(tick);
+}
+function buildFallbackKeys(){
+  const wrap=document.getElementById("fallbackKeys"); wrap.innerHTML="";
+  const present=[...new Set(playState.seq.map(s=>s.pc))];
+  ["C","D","E","F","G","A","B"].forEach(nm=>{ const pc=nameToPc(nm); if(!present.includes(pc)&&present.length<7&&Math.random()<0.3) present.push(pc); });
+  present.sort((a,b)=>a-b).forEach(pc=>{ const btn=document.createElement("button"); btn.className="fk"; btn.textContent=PC_NAMES[pc];
+    btn.addEventListener("click",()=>registerNote({pc, name:PC_NAMES[pc]})); wrap.appendChild(btn); });
+}
+function tick(){
+  if(!playState||!playState.running||!analyser) return;
+  analyser.getFloatTimeDomainData(micBuf);
+  const {freq,rms}=detectPitch(micBuf, audioCtx.sampleRate);
+  if(rms>0.015 && freq>0){
+    const info=freqToInfo(freq); liveReadout(info);
+    if(info.pc===playState.candNote) playState.candCount++; else { playState.candNote=info.pc; playState.candCount=1; }
+    if(playState.candCount===3) registerNote(info);
+  } else {
+    liveReadout(null);
+    if(rms<0.01){ playState.candNote=-1; playState.candCount=0; }
+  }
+  rafId=requestAnimationFrame(tick);
+}
+function liveReadout(info){
+  const h=document.getElementById("heard"), needle=document.getElementById("needle");
+  if(info){ h.textContent="heard: "+info.name+(info.cents>0?" +"+info.cents:" "+info.cents)+"¢";
+    const pos=50+Math.max(-50,Math.min(50,info.cents)); needle.style.left=pos+"%"; needle.classList.add("on");
+    needle.style.background = Math.abs(info.cents)<12 ? "var(--good)" : "var(--brass-bright)"; }
+  else { h.textContent="listening…"; needle.classList.remove("on"); }
+}
+function registerNote(info){
+  const ps=playState; if(!ps||!ps.running) return;
+  const target=ps.seq[ps.idx], ok=info.pc===target.pc;
+  const tnote=document.getElementById("tgtNote");
+  if(ps.strict){
+    ps.hits+=ok?1:0; ps.miss+=ok?0:1; markChip(ps.idx, ok?"hit":"miss");
+    flashTarget(ok); ps.idx++;
+    if(ps.idx>=ps.seq.length) return finishLevel();
+    showTarget(); updateScore();
+  } else {
+    if(ok){ ps.hits++; markChip(ps.idx,"hit"); flashTarget(true); ps.idx++;
+      if(ps.idx>=ps.seq.length) return finishLevel();
+      showTarget(); updateScore(); }
+    else { ps.attempts++; const t=document.getElementById("tgtNote"); t.classList.add("bad"); setTimeout(()=>t.classList.remove("bad"),250);
+      document.getElementById("heard").textContent="heard "+info.name+" — need "+target.name; }
+  }
+}
+function renderSeqStrip(){
+  const strip=document.getElementById("seqStrip"); strip.innerHTML="";
+  playState.seq.forEach((nt,i)=>{ const c=document.createElement("div"); c.className="seq-chip"; c.id="sqc"+i; c.textContent=nt.name; strip.appendChild(c); });
+}
+function markChip(i, cls){ const c=document.getElementById("sqc"+i); if(c){ c.classList.remove("cur"); c.classList.add(cls); } }
+function showTarget(){
+  const ps=playState, t=ps.seq[ps.idx];
+  document.getElementById("tgtNote").textContent=t.name;
+  document.getElementById("tgtNote").className="tnote";
+  document.getElementById("tgtLabel").textContent = ps.strict ? `Note ${ps.idx+1} of ${ps.seq.length}` : "Play this note";
+  ps.seq.forEach((n,i)=>{ const c=document.getElementById("sqc"+i); if(c) c.classList.toggle("cur", i===ps.idx); });
+}
+function flashTarget(ok){ const t=document.getElementById("tgtNote"); t.classList.add(ok?"good":"bad"); setTimeout(()=>t.classList.remove("good","bad"),ok?300:400); }
+function updateScore(){ const ps=playState; document.getElementById("scHit").textContent=ps.hits; document.getElementById("scMiss").textContent=ps.miss; document.getElementById("scLeft").textContent=ps.seq.length-ps.idx; }
+
+async function finishLevel(){
+  const ps=playState; ps.running=false; if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+  const total=ps.seq.length, correct=ps.hits, perfect=ps.strict && ps.miss===0;
+  const xp = correct*2 + 15 + (perfect?10:0);
+  if(!state.play) state.play={xp:0,levels:{}};
+  state.play.xp=(state.play.xp||0)+xp;
+  const prev=state.play.levels[ps.L.n]||{};
+  state.play.levels[ps.L.n]={done:true, total, bestCorrect:Math.max(prev.bestCorrect||0,correct), perfect: prev.perfect||perfect};
+  const d=derive(state); const newly=checkAchievements(d); await saveState(state);
+  renderHeader(d); renderProgress(d); renderLevelCards();
+  showResult(ps, correct, total, perfect, xp);
+  if(!ps.tapMode) releaseMic(); setMicDot(false);
+  newly.forEach(showToast);
+}
+function showResult(ps, correct, total, perfect, xp){
+  showPlayPanel("playResult");
+  document.getElementById("resultBig").textContent=correct+" / "+total;
+  let line = perfect ? "Flawless — every note correct!" : (ps.strict ? `${total-correct} missed` : `nice work — ${ps.attempts} extra ${ps.attempts===1?"try":"tries"} along the way`);
+  document.getElementById("resultLine").textContent=line;
+  const rs=document.getElementById("resultScore");
+  rs.innerHTML=`<div class="ps"><div class="psn" style="color:var(--good)">${correct}</div><div class="psl">Correct</div></div>`
+    + (ps.strict?`<div class="ps"><div class="psn" style="color:var(--bad)">${total-correct}</div><div class="psl">Missed</div></div>`:"")
+    + `<div class="ps"><div class="psn" style="color:var(--brass-bright)">+${xp}</div><div class="psl">XP</div></div>`;
+  const next=document.getElementById("playNext");
+  if(ps.L.n>=PLAY_LEVELS.length){ next.style.display="none"; } else { next.style.display=""; next.textContent=`Level ${ps.L.n+1} →`; }
+}
+function stopPlaySession(silent){
+  if(playState) playState.running=false;
+  releaseMic(); setMicDot(false);
+  if(!silent) showPlayPanel("playStart");
+  else showPlayPanel("playStart");
+  playState=null;
+}
+
 /* ============ TABS / INIT ============ */
 function refreshAll(){ const d=derive(state); renderHeader(d); renderProgress(d); renderLog(); }
-function switchTab(v){ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.v===v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("active",s.id==="v-"+v)); }
+function switchTab(v){
+  if(v!=="play" && (micStream || (playState&&playState.running))){ if(playState) playState.running=false; releaseMic(); setMicDot(false); showPlayPanel("playStart"); playState=null; }
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.v===v));
+  document.querySelectorAll(".view").forEach(s=>s.classList.toggle("active",s.id==="v-"+v));
+}
 
 async function init(){
   state=await loadState();
@@ -810,6 +1119,12 @@ async function init(){
   document.getElementById("learnNotesBtn").addEventListener("click",startQuiz);
   document.getElementById("quizEnd").addEventListener("click",endQuiz);
   document.getElementById("goQuizBtn").addEventListener("click",()=>{ switchTab("quiz"); });
+
+  renderLevelCards();
+  document.getElementById("playStop").addEventListener("click",()=>stopPlaySession(false));
+  document.getElementById("playBack").addEventListener("click",()=>{ showPlayPanel("playStart"); renderLevelCards(); });
+  document.getElementById("playRetry").addEventListener("click",()=>startLevel(pendingLevel,false));
+  document.getElementById("playNext").addEventListener("click",()=>{ if(pendingLevel<PLAY_LEVELS.length) startLevel(pendingLevel+1,false); });
 
   buildGsLegend(); renderGrandStaff();
   document.getElementById("gsIn").addEventListener("click",()=>{ gsZoom=Math.min(2.6, gsZoom+0.25); applyGsZoom(); });
